@@ -1,10 +1,32 @@
-import React from 'react';
-
-import Heart from '../../assets/Heart';
-import './Post.css';
-
+import React, { useContext, useEffect, useState } from "react";
+import {FirebaseContext} from "../../store/Contexts";
+import Heart from "../../assets/Heart";
+import "./Post.css";
+import {NavLink} from 'react-router-dom'
+import { collection, onSnapshot, query } from "firebase/firestore";
+import { postContext } from "../../store/PostContext";
+import { useNavigate } from 'react-router-dom';
 function Posts() {
-
+  const [posts, setPosts] = useState([]);
+  const { db } = useContext(FirebaseContext);
+  const {setPostDetails} = useContext(postContext)
+  const navigate= useNavigate()
+  useEffect(() => {
+    const que = query(collection(db, "products"));
+    console.log("prof"+que)
+    
+    const sub = onSnapshot(que, (querySnapshot) => {
+      const allposts = querySnapshot.docs.map((product) => {
+        return {
+          ...product.data(),
+          id: product.id,
+        };
+      });
+      console.log(allposts);
+      setPosts(allposts);
+      console.log("vvvvvvvvvvvvvvvvvvvvvvvv1111111111111",posts)
+    });
+  }, []);
   return (
     <div className="postParentDiv">
       <div className="moreView">
@@ -12,25 +34,32 @@ function Posts() {
           <span>Quick Menu</span>
           <span>View more</span>
         </div>
-        <div className="cards">
-          <div
-            className="card"
-          >
-            <div className="favorite">
-              <Heart></Heart>
-            </div>
-            <div className="image">
-              <img src="../../../Images/R15V3.jpg" alt="" />
-            </div>
-            <div className="content">
-              <p className="rate">&#x20B9; 250000</p>
-              <span className="kilometer">Two Wheeler</span>
-              <p className="name"> YAMAHA R15V3</p>
-            </div>
-            <div className="date">
-              <span>Tue May 04 2021</span>
-            </div>
-          </div>
+        <div className="cards"><NavLink to="/view">
+        
+          {posts.map((post) => {
+            return (
+              <div className="card" onClick={()=>{
+                setPostDetails(post)
+              }}>
+                <div className="favorite">
+                  <Heart></Heart>
+                </div>
+                <div className="image">
+                  <img src={post.imageUrl} alt="" />
+                </div>
+                <div className="content">
+                  <p className="rate">&#x20B9; {post.price}</p>
+                  <p className="name">{post.name}</p>
+                  <span className="kilometer">{post.category}</span>
+                  
+                </div>
+                <div className="date">
+                  <span>{post.createdAt}</span>
+                </div>
+              </div>
+            );
+          })}
+          </NavLink>
         </div>
       </div>
       <div className="recommendations">

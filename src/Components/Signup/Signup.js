@@ -1,20 +1,73 @@
-import React from 'react';
-
+import React, { useState, useContext } from 'react';
+import { FirebaseContext } from '../../store/Contexts';
 import Logo from '../../olx-logo.png';
 import './Signup.css';
+import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { collection, addDoc, getFirestore } from "firebase/firestore";
+import { useNavigate } from 'react-router-dom';
 
 export default function Signup() {
+
+  const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
+  const [phoneNo, setPhoneNo] = useState('')
+  const [password, setPassword] = useState('')
+
+  const navigate = useNavigate();
+
+  const {firebase} = useContext(FirebaseContext)
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+  
+    const auth = getAuth(); 
+    
+
+    console.log("jhhhhhhhhhhhhhhhhhhhh   "+username)
+
+createUserWithEmailAndPassword(auth, email, password)
+  .then((result) =>  updateProfile( result.user, {displayName:username}).then(() => {
+    console.log("jhhhhhhhhhhhhhhhhhhhh   "+username)
+    addDoc(collection(getFirestore(),"users"), {
+      id : result.user.uid,
+      username : username,
+      phone : phoneNo,
+    }).then(() => {
+      
+      navigate('/login')
+
+    })
+  })
+  )
+  .catch((error) => {
+    console.log("eroorr")
+  });
+
+
+
+
+
+
+
+
+
+
+   
+    
+  }
   return (
     <div>
       <div className="signupParentDiv">
         <img width="200px" height="200px" src={Logo}></img>
-        <form>
+        <form onSubmit={handleSubmit}>
           <label htmlFor="fname">Username</label>
           <br />
           <input
             className="input"
             type="text"
-            id="fname"
+            id="username"
+            value={username}
+            onChange={(e)=>setUsername(e.target.value)}
             name="name"
             defaultValue="John"
           />
@@ -24,7 +77,9 @@ export default function Signup() {
           <input
             className="input"
             type="email"
-            id="fname"
+            id="email"
+            value={email}
+            onChange={(e)=>setEmail(e.target.value)}
             name="email"
             defaultValue="John"
           />
@@ -34,7 +89,9 @@ export default function Signup() {
           <input
             className="input"
             type="number"
-            id="lname"
+            id="phoneno"
+            value={phoneNo}
+            onChange={(e)=>setPhoneNo(e.target.value)}
             name="phone"
             defaultValue="Doe"
           />
@@ -44,7 +101,9 @@ export default function Signup() {
           <input
             className="input"
             type="password"
-            id="lname"
+            id="password"
+            value={password}
+            onChange={(e)=>setPassword(e.target.value)}
             name="password"
             defaultValue="Doe"
           />
